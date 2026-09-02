@@ -6,22 +6,27 @@ class InstrumentResolver:
 
     def resolve_xauusd(self, preferred="frxXAUUSD"):
         symbols = self.client.active_symbols()
-        exact = [s for s in symbols if s.get("underlying_symbol") == preferred]
-        if exact:
-            return exact[0]
+        
+        # Cek cocog pas di field 'symbol' atanapi 'underlying_symbol'
+        for s in symbols:
+            sym = str(s.get("symbol", ""))
+            underlying = str(s.get("underlying_symbol", ""))
+            if preferred.lower() in sym.lower() or preferred.lower() in underlying.lower():
+                return s
 
+        # Alternatif: Cari manual nu ngandung kecap XAU atawa GOLD
         candidates = []
         for s in symbols:
-            name = str(s.get("underlying_symbol_name", "")).upper()
-            sym = str(s.get("underlying_symbol", "")).upper()
-            if "XAU" in name or "GOLD" in name or "XAU" in sym:
+            name = str(s.get("display_name", "")).upper()
+            sym = str(s.get("symbol", "")).upper()
+            underlying = str(s.get("underlying_symbol", "")).upper()
+            if "XAU" in name or "GOLD" in name or "XAU" in sym or "XAU" in underlying:
                 candidates.append(s)
 
         if candidates:
-            raise RuntimeError(
-                "Exact XAUUSD symbol not found. Candidates: " +
-                ", ".join(str(x.get("underlying_symbol")) for x in candidates)
-            )
+            # Lamun manggihan kandidat, langsung cokot anu munggaran tanpa error
+            return candidates[0]
+
         raise RuntimeError("No XAU/GOLD symbol found in active_symbols.")
 
     def get(self, preferred):
