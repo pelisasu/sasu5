@@ -1,31 +1,27 @@
-import pandas as pd
-import time
+from deriv.client import DerivClient
 
-def candles_to_df(response):
-    candles = response.get("candles") or []
-    if not candles:
-        raise RuntimeError("No candles returned.")
-    rows = []
-    for c in candles:
-        rows.append({
-            "time": pd.to_datetime(int(c["epoch"]), unit="s", utc=True),
-            "open": float(c["open"]),
-            "high": float(c["high"]),
-            "low": float(c["low"]),
-            "close": float(c["close"]),
-        })
-    df = pd.DataFrame(rows).sort_values("time").drop_duplicates("time")
-    return df.reset_index(drop=True)
+def fetch_closed_candles(client: DerivClient, symbol_obj, count=500, granularity=60):
+    """
+    Mawa data candles (riwayat harga) ti server Deriv.
+    Ngaronjatkeun kasalametan simbol ku cara milih string 'symbol' tina objek,
+    atawa ngarobah XAUUSD jadi frxXAUUSD otomatis.
+    """
+    # Tangkap string simbol tina objek symbol lamun wujudna dikirim salaku dictionary
+    if isinstance(symbol_obj, dict):
+        symbol_name = symbol_obj.get("symbol", "frxXAUUSD")
+    else:
+        symbol_name = str(symbol_obj)
 
-def fetch_closed_candles(client, symbol, minutes, count):
+    # Antisipasi bilih simbolna masih XAUUSD polos, robah otomatis jadi frxXAUUSD
+    if symbol_name.upper() == "XAUUSD":
+        symbol_name = "frxXAUUSD"
+
     resp = client.ticks_history(
-        symbol,
+        symbol=symbol_name,
         count=count,
-        granularity=minutes * 60
+        granularity=granularity
     )
-    df = candles_to_df(resp)
-    # Remove current/incomplete candle based on epoch boundary.
-    now = int(time.time())
-    period = minutes * 60
-    current_bucket = now - (now % period)
-    return df[df["time"].astype("int64") // 10**9 < current_bucket].copy()
+    
+    # Tarik data candles tina réspon API
+    candles = resp.get("candles", [])
+    return candles
