@@ -28,12 +28,12 @@ jobs:
           DERIV_SYMBOL: frxXAUUSD
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL || 'gpt-5.6-luna' }}
-          MIN_TP_PIPS: "200"
-          MIN_RR: "2.0"
-          STRATEGY_SCORE_THRESHOLD: "88"
-          AI_CONFIDENCE_THRESHOLD: "90"
-          MIN_RESOLVED_FOR_PERFORMANCE_GATE: "100"
-          MIN_TARGET_WIN_RATE: "0.95"
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY_2 }}
+          OPENAI_MODEL: gpt-5.6-luna
+          MIN_TP_PIPS: "50"
+          MIN_RR: "1.5"
+          STRATEGY_SCORE_THRESHOLD: "70"
+          AI_CONFIDENCE_THRESHOLD: "70"
+          MIN_RESOLVED_FOR_PERFORMANCE_GATE: "10"
+          MIN_TARGET_WIN_RATE: "0.60"
         run: python main.py --once
