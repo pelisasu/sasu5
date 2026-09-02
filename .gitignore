@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.py[cod]
+*.log
+*.sqlite
+*.db
+state.json
+journal.jsonl
+artifacts/
+.pytest_cache/
+.vscode/
+.idea/
