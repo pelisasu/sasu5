@@ -1,9 +1,8 @@
 import json
 import time
 import websocket
-from config.settings import SETTINGS  # Tangkap settingan
+from config.settings import SETTINGS
 
-# Ambil App ID dari setting/env, kalau kosong pakai default 1089
 app_id = getattr(SETTINGS, "deriv_app_id", None) or "1089"
 WS_URL = f"wss://ws.binaryws.com/websockets/v3?app_id={app_id}"
 
@@ -33,14 +32,14 @@ class DerivClient:
         }).get("active_symbols", [])
 
     def ticks_history(self, symbol, count=500, granularity=60):
+        # Parameter 'subscribe' dihapus tina pamundut riwayat candles supaya henteu 'Input validation failed'
         return self.request({
             "ticks_history": symbol,
             "end": "latest",
             "count": count,
             "style": "candles",
             "granularity": granularity,
-            "adjust_start_time": 1,
-            "subscribe": 0
+            "adjust_start_time": 1
         })
 
     def latest_tick(self, symbol):
