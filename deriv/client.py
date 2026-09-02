@@ -1,8 +1,11 @@
 import json
 import time
 import websocket
+from config.settings import SETTINGS  # Tangkap settingan
 
-WS_URL = "wss://ws.binaryws.com/websockets/v3"
+# Ambil App ID dari setting/env, kalau kosong pakai default 1089
+app_id = getattr(SETTINGS, "deriv_app_id", None) or "1089"
+WS_URL = f"wss://ws.binaryws.com/websockets/v3?app_id={app_id}"
 
 class DerivClient:
     def __init__(self, timeout=20):
