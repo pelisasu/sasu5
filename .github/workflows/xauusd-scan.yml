@@ -7,7 +7,7 @@ on:
     - cron: "7,22,37,52 * * * 1-5"
 
 concurrency:
-  group: xauusd-signal-scan
+  group: frxXAUUSD-signal-scan
   cancel-in-progress: true
 
 jobs:
