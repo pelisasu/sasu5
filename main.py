@@ -3,6 +3,7 @@ from deriv.client import DerivClient
 from deriv.instrument import InstrumentResolver
 from deriv.data import fetch_closed_candles
 from ai.validator import validate_with_ai
+from telegram.notifier import send_telegram_notification # Disesuaikan jeung fungsi di notifier.py maneh
 from config.settings import SETTINGS
 
 def run_once():
@@ -22,13 +23,12 @@ def run_once():
         "symbol": symbol_name,
         "m30_candles_count": len(m30df),
         "m15_candles_count": len(m15df),
-        "candles_m30": m30df[-5:], # Candles terakhir pikeun acuan
+        "candles_m30": m30df[-5:], 
         "candles_m15": m15df[-5:]
     }
     
     # 3. Validasi sinyal ngagunakeun AI (Gemini)
-    # Catetan: Pastikeun client AI diatur atanapi diset luyu jeung konfigurasi proyék anjeun
-    ai_client = None # Upama nganggo client khusus, sambungkeun ka dieu
+    ai_client = None 
     model_name = getattr(SETTINGS, "openai_model", "gpt-5.6-luna")
     
     validation_result = validate_with_ai(ai_client, model_name, payload)
@@ -44,9 +44,14 @@ def run_once():
         f"Reasons: {', '.join(reasons)}"
     )
     
-    # 4. Kirim Notifikasi ka Telegram upama disatujuan (APPROVE) atanapi dicetak
-    # (Logika pengiriman telegram tiasa diintegrasikeun langsung ka dieu)
+    # 4. Cetak dina log sarta Kirim otomatis ka Telegram
     print(result_msg)
+    try:
+        # Nyoba ngirim pesen via notifier Telegram anu aya di proyék maneh
+        send_telegram_notification(result_msg)
+    except Exception as e:
+        print(f"Gagal ngirim Telegram: {e}")
+        
     return result_msg
 
 def main():
