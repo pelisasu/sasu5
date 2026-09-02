@@ -1,0 +1,39 @@
+name: XAUUSD AI Signal Scan
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Every 15 minutes, offset from the hour to reduce scheduling congestion.
+    - cron: "7,22,37,52 * * * 1-5"
+
+concurrency:
+  group: xauusd-signal-scan
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Offline tests
+        run: python -m tests.test_all
+      - name: XAUUSD scan
+        env:
+          DERIV_APP_ID: ${{ secrets.DERIV_APP_ID }}
+          DERIV_SYMBOL: frxXAUUSD
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL || 'gpt-5.6-luna' }}
+          MIN_TP_PIPS: "200"
+          MIN_RR: "2.0"
+          STRATEGY_SCORE_THRESHOLD: "88"
+          AI_CONFIDENCE_THRESHOLD: "90"
+          MIN_RESOLVED_FOR_PERFORMANCE_GATE: "100"
+          MIN_TARGET_WIN_RATE: "0.95"
+        run: python main.py --once
