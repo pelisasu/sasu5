@@ -1,14 +1,17 @@
-def dynamic_levels(setup, m30, pip_size, min_tp_pips=200, min_rr=2.0):
+def dynamic_levels(setup, m30, pip_size, min_tp_pips=500, min_rr=2.5):
     p = setup["price"]
+    # Biarkan ATR murni bergerak bebas mengikuti volatilitas pasar emas yang agresif
     atr = max(setup["atr"], pip_size)
     min_dist = min_tp_pips * pip_size
     direction = setup["direction"]
 
-    # Conservative dynamic SL based on volatility.
-    sl_dist = max(1.15 * atr, min_dist / min_rr)
+    # Perbesar multiplier dari ATR agar target TP langsung menjauh dan ngajelegur
+    sl_dist = max(1.5 * atr, min_dist / min_rr)
     tp1_dist = max(min_dist, min_rr * sl_dist)
-    tp2_dist = max(tp1_dist * 1.6, min_dist * 2.0)
-    tp3_dist = max(tp2_dist * 1.5, min_dist * 3.0)
+    
+    # Target TP2 dan TP3 diperlebar jauh (Multi-tier TP untuk profit maksimal)
+    tp2_dist = tp1_dist * 2.0
+    tp3_dist = tp1_dist * 3.5
 
     if direction == "BUY":
         sl, tp1, tp2, tp3 = p-sl_dist, p+tp1_dist, p+tp2_dist, p+tp3_dist
