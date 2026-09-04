@@ -5,6 +5,7 @@ from deriv.data import fetch_closed_candles
 from ai.validator import validate_with_ai
 from telegram.notifier import send_telegram, signal_text, error_text
 from config.settings import SETTINGS
+from strategy.dynamic_tp import dynamic_levels  # Import fungsi dynamic levels yang sudah kita buat
 
 def run_once():
     try:
@@ -38,22 +39,33 @@ def run_once():
         confidence = validation_result.get("confidence", 0)
         reasons = validation_result.get("reasons", [])
         
-        # 4. Jieun struktur data sinyal luyu jeung format ti notifier.py
-        # Candak harga panungtung tina data m15 bilih peryogi, atawa estimasi saderhana
+        # 4. Kalkulasi harga & TP/SL Dinamis Supados Ngajelegur Badag (Minimal 500 pips)
         last_close = m15df[-1].get("close", 0) if m15df else 0
+        
+        # Simulasi setup objek pikeun dikirim kana dynamic_levels
+        # Menggunakan ATR rata-rata atau estimasi volatilitas emas
+        dummy_setup = {
+            "price": last_close,
+            "atr": 15.0,  # Estimasi ATR XAUUSD harian/sesi
+            "direction": "BUY" if decision == "APPROVE" else "SELL"
+        }
+        
+        # Panggil fungsi dynamic_levels dengan min_tp_pips 500 & RR 2.5
+        pip_size = 0.01  # Ukuran pip untuk XAUUSD
+        levels = dynamic_levels(dummy_setup, m30df, pip_size, min_tp_pips=SETTINGS.min_tp_pips, min_rr=SETTINGS.min_rr)
         
         signal_data = {
             "direction": "BUY" if decision == "APPROVE" else "HOLD/REJECT",
             "symbol": symbol_name,
-            "entry": last_close,
-            "sl": last_close - 5.0,  # Conto SL
-            "tp1": last_close + 5.0,
-            "tp1_pips": 50,
-            "tp2": last_close + 10.0,
-            "tp2_pips": 100,
-            "tp3": last_close + 15.0,
-            "tp3_pips": 150,
-            "rr": 1.5,
+            "entry": levels["entry"],
+            "sl": levels["sl"],
+            "tp1": levels["tp1"],
+            "tp1_pips": levels["tp1_pips"],
+            "tp2": levels["tp2"],
+            "tp2_pips": levels["tp2_pips"],
+            "tp3": levels["tp3"],
+            "tp3_pips": levels["tp3_pips"],
+            "rr": levels["rr_tp1"],
             "score": 75.0,
             "ai_confidence": confidence,
             "m30_bias": "Bullish",
